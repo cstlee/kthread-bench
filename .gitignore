@@ -1,2 +1,7 @@
 .tags
 .vagrant
+.vscode
+
+*.o
+dispatch
+worker
