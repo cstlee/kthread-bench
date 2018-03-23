@@ -27,12 +27,12 @@ int main(int argc, char *argv[])
     int fd = shm_open("/kthread-bench-ctrl", O_RDWR, S_IRWXU);
     if (fd == -1)
     {
-        fprintf(stderr, "Could not open shared memory region. (%d)\n", strerror(errno));
+        fprintf(stderr, "Could not open shared memory region. (%s)\n", strerror(errno));
     }
 
     if (ftruncate(fd, mem_size) == -1)
     {
-        fprintf(stderr, "Could not truncate memory region. (%d)\n", strerror(errno));
+        fprintf(stderr, "Could not truncate memory region. (%s)\n", strerror(errno));
     }
 
     control = (struct ControlTable *)mmap(NULL, mem_size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);

@@ -1,5 +1,5 @@
 CC = g++
-CFLAGS = \
+CFLAGS = -Wall -Werror \
 			-I/usr/include/x86_64-linux-gnu \
 			-Ilib/PerfUtils/include
 LFLAGS = -lrt \
