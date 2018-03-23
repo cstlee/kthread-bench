@@ -1,6 +1,9 @@
 CC = g++
-CFLAGS = -I /usr/include/x86_64-linux-gnu
-LFLAGS = -lrt
+CFLAGS = \
+			-I/usr/include/x86_64-linux-gnu \
+			-Ilib/PerfUtils/include
+LFLAGS = -lrt \
+			-Llib/PerfUtils/lib -lPerfUtils
 
 SRCDIR = src
 OBJDIR = obj
