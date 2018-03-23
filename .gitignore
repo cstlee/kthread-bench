@@ -2,6 +2,5 @@
 .vagrant
 .vscode
 
-*.o
-dispatch
-worker
+bin
+obj

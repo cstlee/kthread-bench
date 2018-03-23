@@ -1,18 +1,40 @@
-CC=g++
-INCLUDES=/usr/include/x86_64-linux-gnu
-LDLIBS=-lrt
-all: dispatch worker
+CC = g++
+CFLAGS = -I /usr/include/x86_64-linux-gnu
+LFLAGS = -lrt
 
-%.o: %.cc 
-	$(CC) -c $< -I $(INCLUDES)
+SRCDIR = src
+OBJDIR = obj
+BINDIR = bin
+SRCEXT = cc
+OBJEXT = o
+DEPEXT = d
 
-dispatch: dispatch.o
-	$(CC) -o $@ $^ $(LDLIBS)
+src = $(wildcard $(SRCDIR)/*.$(SRCEXT))
+obj = $(src:$(SRCDIR)/%.$(SRCEXT)=$(OBJDIR)/%.$(OBJEXT))
+dep = $(obj:.$(OBJEXT)=.$(DEPEXT))
 
-worker: worker.o
-	$(CC) -o $@ $^ $(LDLIBS)
+.SUFFIXES:
+
+all: $(BINDIR)/dispatch $(BINDIR)/worker
+
+$(BINDIR)/dispatch: $(OBJDIR)/dispatch.$(OBJEXT)
+	@mkdir -p $(BINDIR)
+	$(CC) -o $@ $(CFLAGS) $^ $(LFLAGS)
+
+$(BINDIR)/worker: $(OBJDIR)/worker.$(OBJEXT)
+	@mkdir -p $(BINDIR)
+	$(CC) -o $@ $(CFLAGS) $^ $(LFLAGS)
+
+-include $(dep)
+
+$(OBJDIR)/%.$(DEPEXT): $(SRCDIR)/%.$(SRCEXT)
+	@mkdir -p $(OBJDIR)
+	@$(CPP) $(CFLAGS) $< -MM -MT $(@:.$(DEPEXT)=.$(OBJEXT)) >$@
+
+$(OBJDIR)/%.$(OBJEXT): $(SRCDIR)/%.$(SRCEXT)
+	@mkdir -p $(OBJDIR)
+	$(CC) -c -o $@ $(CFLAGS) $<
 
 .PHONY: clean
-
 clean:
-	rm -f dispatch dispatch.o worker worker.o
+	rm -f $(obj) $(dep) $(BINDIR)/*
