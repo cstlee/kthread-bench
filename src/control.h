@@ -1,7 +1,7 @@
 #include <atomic>
 #include <stdint.h>
 
-#define MAX_WORKER_COUNT 10
+#define MAX_WORKER_COUNT 1000
 #define WORKER_WAKE 1
 #define WORKER_SLEEP 0
 
