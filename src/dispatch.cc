@@ -21,12 +21,18 @@ int main(int argc, char *argv[])
 {
     if (argc < 2)
     {
-        fprintf(stderr, "Usage: dispatch <num_workers> <num_samples>\n");
+        fprintf(stderr, "Usage: dispatch <num_workers> <num_samples> [sleep_time_us]\n");
         return 1;
     }
 
     int num_workers = atoi(argv[1]);
     int num_samples = atoi(argv[2]);
+    int sleep_us = 100;
+
+    if (argc == 4)
+    {
+        sleep_us = atoi(argv[3]);
+    }
 
     if (num_workers < 1)
     {
@@ -78,7 +84,7 @@ int main(int argc, char *argv[])
     {
         // Race Condition; Slow down the dispatch to try to make sure the worker
         // has time to go back to sleep before we try to signal.
-        Cycles::sleep(100);
+        Cycles::sleep(sleep_us);
 
         int workerId = rand() % control->nextWorkerId.load();
         int err = 0;

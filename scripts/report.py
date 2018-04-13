@@ -18,7 +18,6 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
-
 def load(filename):
     numbers = []
     with open(filename, 'r') as f:

@@ -3,7 +3,7 @@
 """Futex Benchmark
 
 Usage:
-    futex_bench.py <num_workers> <num_samples>
+    futex_bench.py <num_workers> <num_samples> <sleep_us>
 
 Options:
     -h --help       Show this screen.
@@ -34,11 +34,11 @@ def exit_handler():
             w.kill()
 
 
-def main(bin_dir, num_workers, num_samples):
+def main(bin_dir, num_workers, num_samples, sleep_us):
     global dispatch
     global workers
 
-    dispatch = subprocess.Popen([bin_dir + '/dispatch', num_workers, num_samples])
+    dispatch = subprocess.Popen([bin_dir + '/dispatch', num_workers, num_samples, sleep_us])
     time.sleep(1)
     for i in xrange(int(num_workers)):
         workers.append(subprocess.Popen([bin_dir + '/worker']))
@@ -56,4 +56,4 @@ if __name__ == "__main__":
     project_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
     bin_dir = project_dir + '/bin'
     atexit.register(exit_handler)
-    main(bin_dir, args['<num_workers>'], args['<num_samples>'])
+    main(bin_dir, args['<num_workers>'], args['<num_samples>'], args['<sleep_us>'])
