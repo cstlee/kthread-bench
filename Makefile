@@ -1,9 +1,11 @@
 CC = g++
 CFLAGS = -std=c++11 -Wall -Werror \
 			-I/usr/include/x86_64-linux-gnu \
-			-Ilib/PerfUtils/include
+			-Ilib/PerfUtils/include \
+			-Ilib/docopt.cpp
 LFLAGS = -lrt \
-			-Llib/PerfUtils/lib -lPerfUtils
+			-Llib/PerfUtils/lib -lPerfUtils \
+			-Llib/docopt.cpp -l:libdocopt.a
 
 SRCDIR = src
 OBJDIR = obj

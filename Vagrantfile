@@ -65,7 +65,7 @@ Vagrant.configure("2") do |config|
   # documentation for more information about their specific syntax and use.
   config.vm.provision "shell", inline: <<-SHELL
     apt-get update
-    apt-get install -y g++ linux-headers-$(uname -r) python-pip
+    apt-get install -y g++ linux-headers-$(uname -r) python-pip cmake
 
     pip install matplotlib
   SHELL
