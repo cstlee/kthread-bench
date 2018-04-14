@@ -21,12 +21,13 @@ static const char USAGE[] =
 R"(Futex Benchmark Dispatch
 
     Usage:
-        dispatch <num_workers> <num_samples> [--sleep-us TIME]
+        dispatch <num_workers> <num_samples> [--sleep-us TIME] [--loadgen]
 
     Options:
         -h --help           Show this screen.
         --version           Show version.
         --sleep-us TIME     Time between futex wakeups in usec [default: 100].
+        --loadgen           Benchmark will continue to run until stopped.
 )";
 
 int main(int argc, char *argv[])
@@ -40,6 +41,7 @@ int main(int argc, char *argv[])
     int num_workers = args.at("<num_workers>").asLong();
     int num_samples = args.at("<num_samples>").asLong();
     int sleep_us = args.at("--sleep-us").asLong();
+    bool loadgen = args.at("--loadgen").asBool();
 
     if (num_workers < 1)
     {
@@ -87,34 +89,36 @@ int main(int argc, char *argv[])
     while (control->nextWorkerId.load() < num_workers)
         ;
 
-    for (int i = 0; i < num_samples; ++i)
-    {
-        // Race Condition; Slow down the dispatch to try to make sure the worker
-        // has time to go back to sleep before we try to signal.
-        Cycles::sleep(sleep_us);
-
-        int workerId = rand() % control->nextWorkerId.load();
-        int err = 0;
-        uint64_t startTSC = 0;
-        uint64_t endTSC = 0;
-
-        control->controlBlock[workerId].futex = WORKER_WAKE;
-        startTSC = Cycles::rdtsc();
-        err = syscall(SYS_futex, &control->controlBlock[workerId].futex, FUTEX_WAKE, 1, NULL, NULL, 0);
-        if (err == -1)
+    do {
+        for (int i = 0; i < num_samples; ++i)
         {
-            fprintf(stderr, "Error while trying to wake futex. (%s)\n", strerror(errno));
-            return 1;
+            // Race Condition; Slow down the dispatch to try to make sure the worker
+            // has time to go back to sleep before we try to signal.
+            Cycles::sleep(sleep_us);
+
+            int workerId = rand() % control->nextWorkerId.load();
+            int err = 0;
+            uint64_t startTSC = 0;
+            uint64_t endTSC = 0;
+
+            control->controlBlock[workerId].futex = WORKER_WAKE;
+            startTSC = Cycles::rdtsc();
+            err = syscall(SYS_futex, &control->controlBlock[workerId].futex, FUTEX_WAKE, 1, NULL, NULL, 0);
+            if (err == -1)
+            {
+                fprintf(stderr, "Error while trying to wake futex. (%s)\n", strerror(errno));
+                return 1;
+            }
+
+            // Wait for worker to wake up and report latency.
+            while (control->controlBlock[workerId].val.load() == 0)
+                ;
+            endTSC = control->controlBlock[workerId].val.load();
+            control->controlBlock[workerId].val.store(0);
+
+            samples[i] = Cycles::toNanoseconds(endTSC - startTSC);
         }
-
-        // Wait for worker to wake up and report latency.
-        while (control->controlBlock[workerId].val.load() == 0)
-            ;
-        endTSC = control->controlBlock[workerId].val.load();
-        control->controlBlock[workerId].val.store(0);
-
-        samples[i] = Cycles::toNanoseconds(endTSC - startTSC);
-    }
+    } while (loadgen);
 
     // Print samples
     for (int i = 0; i < num_samples; ++i)

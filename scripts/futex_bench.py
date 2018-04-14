@@ -3,12 +3,13 @@
 """Futex Benchmark
 
 Usage:
-    futex_bench.py <num_workers> <num_samples> [--sleep-us TIME]
+    futex_bench.py <num_workers> <num_samples> [--sleep-us TIME] [--loadgen]
 
 Options:
     -h --help           Show this screen.
     --version           Show version.
     --sleep-us TIME     Time between futex wakeups in usec [default: 100].
+    --loadgen           Benchmark will continue to run until stopped.
 """
 
 from docopt import docopt
@@ -35,16 +36,22 @@ def exit_handler():
             w.kill()
 
 
-def main(bin_dir, num_workers, num_samples, sleep_us):
+def main(bin_dir, args):
     global dispatch
     global workers
 
-    dispatch = subprocess.Popen([bin_dir + '/dispatch',
-                                 num_workers,
-                                 num_samples,
-                                 '--sleep-us', sleep_us])
+    dispatch_args = [args['<num_workers>'], 
+                     args['<num_samples>']]
+
+    if args['--sleep-us'] is not None:
+        dispatch_args += ['--sleep-us', args['--sleep-us']]
+    
+    if args['--loadgen'] is True:
+        dispatch_args += ['--loadgen']
+
+    dispatch = subprocess.Popen([bin_dir + '/dispatch'] + dispatch_args)
     time.sleep(1)
-    for i in xrange(int(num_workers)):
+    for i in xrange(int(args['<num_workers>'])):
         workers.append(subprocess.Popen([bin_dir + '/worker']))
     
     while dispatch.returncode is None:
@@ -60,4 +67,4 @@ if __name__ == "__main__":
     project_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
     bin_dir = project_dir + '/bin'
     atexit.register(exit_handler)
-    main(bin_dir, args['<num_workers>'], args['<num_samples>'], args['--sleep-us'])
+    main(bin_dir, args)
