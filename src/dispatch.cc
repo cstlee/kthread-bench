@@ -9,30 +9,36 @@
 #include <linux/futex.h>
 #include <sys/syscall.h>
 
-#include <cstdlib>
 #include <cstdio>
 
 #include "control.h"
 #include "PerfUtils/Cycles.h"
+#include "docopt.h"
 
 using PerfUtils::Cycles;
 
+static const char USAGE[] = 
+R"(Futex Benchmark Dispatch
+
+    Usage:
+        dispatch <num_workers> <num_samples> <sleep_us>
+
+    Options:
+        -h --help       Show this screen.
+        --version       Show version.
+)";
+
 int main(int argc, char *argv[])
 {
-    if (argc < 2)
-    {
-        fprintf(stderr, "Usage: dispatch <num_workers> <num_samples> [sleep_time_us]\n");
-        return 1;
-    }
+    std::map<std::string, docopt::value> args
+        = docopt::docopt(USAGE,
+                         { argv + 1, argv + argc },
+                         true,
+                         "Futex Benchmark Dispatch 0.1");
 
-    int num_workers = atoi(argv[1]);
-    int num_samples = atoi(argv[2]);
-    int sleep_us = 100;
-
-    if (argc == 4)
-    {
-        sleep_us = atoi(argv[3]);
-    }
+    int num_workers = args.at("<num_workers>").asLong();
+    int num_samples = args.at("<num_samples>").asLong();
+    int sleep_us = args.at("<sleep_us>").asLong();
 
     if (num_workers < 1)
     {
