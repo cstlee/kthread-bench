@@ -21,11 +21,12 @@ static const char USAGE[] =
 R"(Futex Benchmark Dispatch
 
     Usage:
-        dispatch <num_workers> <num_samples> <sleep_us>
+        dispatch <num_workers> <num_samples> [--sleep-us TIME]
 
     Options:
-        -h --help       Show this screen.
-        --version       Show version.
+        -h --help           Show this screen.
+        --version           Show version.
+        --sleep-us TIME     Time between futex wakeups in usec [default: 100].
 )";
 
 int main(int argc, char *argv[])
@@ -38,7 +39,7 @@ int main(int argc, char *argv[])
 
     int num_workers = args.at("<num_workers>").asLong();
     int num_samples = args.at("<num_samples>").asLong();
-    int sleep_us = args.at("<sleep_us>").asLong();
+    int sleep_us = args.at("--sleep-us").asLong();
 
     if (num_workers < 1)
     {
